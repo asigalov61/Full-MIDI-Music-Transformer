@@ -137,10 +137,10 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
         # START PROCESSING
 
         # Convering MIDI to ms score with MIDI.py module
-        score = TMIDIX.midi2ms_score(open(f, 'rb').read())
+        score = TMIDIX.midi2score(open(f, 'rb').read())
 
-        # INSTRUMENTS CONVERSION CYCLE
         events_matrix = []
+
         itrack = 1
 
         events_types = ['note',
@@ -156,16 +156,37 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
                     events_matrix.append(event)
             itrack += 1
 
-        events_matrix.sort(key = lambda x: x[1])
+        opus = TMIDIX.score2opus([score[0], events_matrix])
+        ms_score = TMIDIX.opus2score(TMIDIX.to_millisecs(opus))
 
-        if len(events_matrix) > 0:
-            if min([e[1] for e in events_matrix]) >= 0 and min([e[2] for e in events_matrix if e[0] == 'note']) >= 0:
+        events_matrix1 = []
+
+        itrack = 1
+
+        events_types = ['note',
+                        'patch_change',
+                        'control_change',
+                        'key_after_touch',
+                        'channel_after_touch',
+                        'pitch_wheel_change']
+
+        while itrack < len(ms_score):
+            for event in ms_score[itrack]:
+                if event[0] in events_types:
+                    events_matrix1.append(event)
+            itrack += 1
+
+        events_matrix1.sort(key = lambda x: (x[4] if x[0] == 'note' else x[1]), reverse = True)
+        events_matrix1.sort(key = lambda x: x[1])
+
+        if len(events_matrix1) > 0:
+            if min([e[1] for e in events_matrix1]) >= 0 and min([e[2] for e in events_matrix1 if e[0] == 'note']) >= 0:
 
                 #=======================================================
                 # PRE-PROCESSING
 
                 # recalculating timings
-                for e in events_matrix:
+                for e in events_matrix1:
                     e[1] = int(e[1] / 16) # Max 2 seconds for start-times
                     if e[0] == 'note':
                         e[2] = int(e[2] / 32) # Max 4 seconds for durations
@@ -175,9 +196,9 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
 
                 melody_chords = []
 
-                pe = events_matrix[0]
+                pe = events_matrix1[0]
 
-                for e in events_matrix:
+                for e in events_matrix1:
 
                     if e[0] == 'note':
 
@@ -245,7 +266,7 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
 
                 # Adding SOS/EOS, intro and counters
 
-                if len(melody_chords) < (127 * 100) and ((events_matrix[-1][1] * 16) < (8 * 60 * 1000)): # max 12700 MIDI events and max 8 min per composition
+                if len(melody_chords) < (127 * 100) and ((events_matrix1[-1][1] * 16) < (8 * 60 * 1000)): # max 12700 MIDI events and max 8 min per composition
 
                     melody_chords1 = [['start', 0, 0, 0, 0, 0]]
 
@@ -497,7 +518,8 @@ if len(out) != 0:
 detailed_stats = TMIDIX.Tegridy_SONG_to_Full_MIDI_Converter(song_f,
                                                     output_signature = 'Full MIDI Music Transformer',
                                                     output_file_name = '/content/Full-MIDI-Music-Transformer-Composition',
-                                                    track_name='Project Los Angeles'
+                                                    track_name='Project Los Angeles',
+                                                    number_of_ticks_per_quarter=500
                                                     )
 
 """# Congrats! You did it! :)"""
