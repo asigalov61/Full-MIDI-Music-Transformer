@@ -137,7 +137,7 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
         # START PROCESSING
 
         # Convering MIDI to ms score with MIDI.py module
-        ms_score = TMIDIX.midi2single_track_ms_score(open(f, 'rb').read(), verbose=True)
+        ms_score = TMIDIX.midi2single_track_ms_score(open(f, 'rb').read(), recalculate_channels=False)
 
         events_matrix1 = []
 
@@ -174,6 +174,9 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
                 #=======================================================
                 # FINAL PRE-PROCESSING
 
+                patch_list = [0] * 16
+                patch_list[9] = 128
+
                 melody_chords = []
 
                 pe = events_matrix1[0]
@@ -188,9 +191,10 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
                         cha = max(0, min(15, e[3]))
                         ptc = max(1, min(127, e[4]))
                         vel = max(1, min(127, e[5]))
+                        pat = patch_list[cha]
 
                         # Writing final note
-                        melody_chords.append(['note', time, dur, cha, ptc, vel])
+                        melody_chords.append(['note', time, dur, cha, ptc, vel, pat])
 
                     if e[0] == 'patch_change':
 
@@ -198,6 +202,11 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
                         time = max(0, min(127, e[1]-pe[1]))
                         cha = max(0, min(15, e[2]))
                         ptc = max(0, min(127, e[3]))
+
+                        if cha != 9:
+                            patch_list[cha] = ptc
+                        else:
+                            patch_list[cha] = ptc+128
 
                         melody_chords.append(['patch_change', time, cha, ptc])
 
@@ -209,7 +218,9 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
                         con = max(0, min(127, e[3]))
                         cval = max(0, min(127, e[4]))
 
-                        melody_chords.append(['control_change', time, cha, con, cval])
+                        pat = patch_list[cha]
+
+                        melody_chords.append(['control_change', time, pat, con, cval])
 
                     if e[0] == 'key_after_touch':
 
@@ -219,7 +230,9 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
                         ptc = max(1, min(127, e[3]))
                         vel = max(1, min(127, e[4]))
 
-                        melody_chords.append(['key_after_touch', time, cha, ptc, vel])
+                        pat = patch_list[cha]
+
+                        melody_chords.append(['key_after_touch', time, pat, ptc, vel])
 
                     if e[0] == 'channel_after_touch':
 
@@ -228,7 +241,9 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
                         cha = max(0, min(15, e[2]))
                         vel = max(1, min(127, e[3]))
 
-                        melody_chords.append(['channel_after_touch', time, cha, vel])
+                        pat = patch_list[cha]
+
+                        melody_chords.append(['channel_after_touch', time, pat, vel])
 
                     if e[0] == 'pitch_wheel_change':
 
@@ -237,7 +252,9 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
                         cha = max(0, min(15, e[2]))
                         wheel = max(-8192, min(8192, e[3])) // 128
 
-                        melody_chords.append(['pitch_wheel_change', time, cha, wheel])
+                        pat = patch_list[cha]
+
+                        melody_chords.append(['pitch_wheel_change', time, pat, wheel])
 
                     pe = e
 
@@ -281,78 +298,78 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
                                 ptc = m[4]
 
                             # Writing final note
-                            melody_chords2.extend([m[3], m[1]+16, m[2]+16+128, ptc+16+128+128, m[5]+16+128+128+256])
+                            melody_chords2.extend([m[6], m[1]+256, m[2]+256+128, ptc+256+128+128, m[5]+256+128+128+256])
 
-                        # Total tokens so far 656
+                        # Total tokens so far 896
 
-                        if m[0] == 'patch_change': # 656
+                        if m[0] == 'patch_change': # 896
 
-                            melody_chords2.extend([1425, m[1]+16, m[2], m[3]+16+128+128+256+128, 1424])
+                            melody_chords2.extend([1554, m[1]+256, m[2]+256+128+128+256+128, m[3], 1553])
 
-                        # Total tokens so far 784
+                        # Total tokens so far 912
 
-                        if m[0] == 'control_change': # 784
+                        if m[0] == 'control_change': # 912
 
-                            melody_chords2.extend([1426, m[1]+16, m[2], m[3]+16+128+128+256+128+128, m[4]+16+128+128+256+128+128+128])
+                            melody_chords2.extend([1555, m[1]+256, m[2], m[3]+256+128+128+256+128+16, m[4]+256+128+128+256+128+16+128])
 
-                        # Total tokens so far 1040
+                        # Total tokens so far 1168
 
-                        if m[0] == 'key_after_touch': # 1040
+                        if m[0] == 'key_after_touch': # 1168
 
                             if m[2] == 9:
                                 ptc = m[3] + 128
                             else:
                                 ptc = m[3]
 
-                            melody_chords2.extend([1427, m[1]+16, m[2], ptc+16+128+128, m[4]+16+128+128+256])
-
-                        # Total tokens so far 1040
-
-                        if m[0] == 'channel_after_touch': # 1040
-
-                            melody_chords2.extend([1428, m[1]+16, m[2], m[3]+16+128+128+256, 1424])
-
-                        # Total tokens so far 1040
-
-                        if m[0] == 'pitch_wheel_change': # 1040
-
-                            melody_chords2.extend([1429, m[1]+16, m[2], m[3]+16+128+128+256+128+128+128+128, 1424])
+                            melody_chords2.extend([1556, m[1]+256, m[2], ptc+256+128+128, m[4]+256+128+128+256])
 
                         # Total tokens so far 1168
 
-                        if m[0] == 'counters_seq': # 1168
+                        if m[0] == 'channel_after_touch': # 1168
 
-                            melody_chords2.extend([1430, m[1]+16+128+128+256+128+128+128+128+128, m[2]+16+128+128+256+128+128+128+128+128+128, 1424, 1424])
+                            melody_chords2.extend([1557, m[1]+256, m[2], m[3]+256+128+128+256, 1553])
 
-                        # Total tokens so far: 1424
+                        # Total tokens so far 1168
+
+                        if m[0] == 'pitch_wheel_change': # 1168
+
+                            melody_chords2.extend([1558, m[1]+256, m[2], m[3]+256+128+128+256+128+16+128, 1553])
+
+                        # Total tokens so far 1296
+
+                        if m[0] == 'counters_seq': # 1296
+
+                            melody_chords2.extend([1559, m[1]+256+128+128+256+128+16+128+128, m[2]+256+128+128+256+128+16+128+128+128, 1553, 1553])
+
+                        # Total tokens so far: 1552
 
                         #=======================================================
 
-                        # 1424 - pad token
+                        # 1553 - pad token
 
-                        # 1425 - patch change token
-                        # 1426 - control change token
-                        # 1427 - key after touch token
-                        # 1428 - channel after touch token
-                        # 1429 - pitch wheel change token
-                        # 1430 - counters seq token
+                        # 1554 - patch change token
+                        # 1555 - control change token
+                        # 1556 - key after touch token
+                        # 1557 - channel after touch token
+                        # 1558 - pitch wheel change token
+                        # 1559 - counters seq token
 
-                        # 1431 - outro token
-                        # 1432 - end token
-                        # 1433 - start token
+                        # 1560 - outro token
+                        # 1561 - end token
+                        # 1562 - start token
 
                         if m[0] == 'outro':
-                            melody_chords2.extend([1431, 1431, 1431, 1431, 1431])
+                            melody_chords2.extend([1560, 1560, 1560, 1560, 1560])
 
                         if m[0] == 'end':
-                            melody_chords2.extend([1432, 1432, 1432, 1432, 1432])
+                            melody_chords2.extend([1561, 1561, 1561, 1561, 1561])
 
                         if m[0] == 'start':
-                            melody_chords2.extend([1433, 1433, 1433, 1433, 1433])
+                            melody_chords2.extend([1562, 1562, 1562, 1562, 1562])
 
                     #=======================================================
 
-                    # FINAL TOTAL TOKENS: 1433
+                    # FINAL TOTAL TOKENS: 1562
 
                     #=======================================================
 
@@ -430,68 +447,106 @@ if len(out) != 0:
 
     son = []
     song1 = []
-    for s in song: # creating penta seqs...
+    for i in range(0, len(song), 5): # creating penta seqs...
+        song1.append(song[i:i+5])
 
-        if s > 15 and s < 1425:
-
-            son.append(s)
-        else:
-            if len(son) == 5:
-                song1.append(son)
-                son = []
-            son.append(s)
+    patch_list = [0] * 16
+    patch_list[9] = 128
 
     for s in song1: # decoding...
 
-        if s[0] < 16: # Note
+        # 1553 - pad token
 
-            channel = s[0]
-            time += (s[1]-16) * 16
-            dur = (s[2]-16-128) * 32
-            pitch = (s[3]-16-128-128) % 128
-            vel = (s[4]-16-128-128-256)
+        # 1554 - patch change token
+        # 1555 - control change token
+        # 1556 - key after touch token
+        # 1557 - channel after touch token
+        # 1558 - pitch wheel change token
+        # 1559 - counters seq token
+
+        # 1560 - outro token
+        # 1561 - end token
+        # 1562 - start token
+
+        if s[0] < 256: # Note
+
+            patch = s[0]
+            time += (s[1]-256) * 16
+            dur = (s[2]-256-128) * 32
+            pitch = (s[3]-256-128-128) % 128
+            vel = (s[4]-256-128-128-256)
+
+            try:
+                channel = patch_list.index(patch)
+            except:
+                channel = 15
 
             song_f.append(['note', time, dur, channel, pitch, vel])
 
-        if s[0] == 1425: # patch change
+        if s[0] == 1554: # patch change
 
-            time += (s[1]-16) * 16
-            channel = s[2]
-            patch = (s[3]-(16+128+128+256+128))
+            time += (s[1]-256) * 16
+            channel = (s[2]-(256+128+128+256+128))
+            patch = s[3]
+
+            if channel != 9:
+                patch_list[channel] = patch
+            else:
+                patch_list[channel] = patch + 128
 
             song_f.append(['patch_change', time, channel, patch])
 
-        if s[0] == 1426: # control change
+        if s[0] == 1555: # control change
 
-            time += (s[1]-16) * 16
-            channel = s[2]
-            controller = (s[3]-(16+128+128+256+128+128))
-            controller_value = (s[4]-(16+128+128+256+128+128+128))
+            time += (s[1]-256) * 16
+            patch = s[2]
+            controller = (s[3]-(256+128+128+256+128+16))
+            controller_value = (s[4]-(256+128+128+256+128+16+128))
+
+            try:
+                channel = patch_list.index(patch)
+            except:
+                channel = 15
 
             song_f.append(['control_change', time, channel, controller, controller_value])
 
-        if s[0] == 1427: # key after touch
+        if s[0] == 1556: # key after touch
 
-            time += (s[1]-16) * 16
-            channel = s[2]
-            pitch = (s[3]-16-128-128) % 128
-            vel = (s[4]-16-128-128-256)
+            time += (s[1]-256) * 16
+            patch = s[2]
+            pitch = (s[3]-256-128-128) % 128
+            vel = (s[4]-256-128-128-256)
+
+            try:
+                channel = patch_list.index(patch)
+            except:
+                channel = 15
 
             song_f.append(['key_after_touch', time, channel, pitch, vel])
 
-        if s[0] == 1428: # channel after touch
+        if s[0] == 1557: # channel after touch
 
-            time += (s[1]-16) * 16
-            channel = s[2]
-            vel = (s[3]-16-128-128-256)
+            time += (s[1]-256) * 16
+            patch = s[2]
+            vel = (s[3]-256-128-128-256)
+
+            try:
+                channel = patch_list.index(patch)
+            except:
+                channel = 15
 
             song_f.append(['channel_after_touch', time, channel, vel])
 
-        if s[0] == 1429: # pitch wheel change
+        if s[0] == 1558: # pitch wheel change
 
-            time += (s[1]-16) * 16
-            channel = s[2]
-            pitch_wheel = (s[3]-(16+128+128+256+128+128+128+128)) * 128
+            time += (s[1]-256) * 16
+            patch = s[2]
+            pitch_wheel = (s[3]-(256+128+128+256+128+16+128)) * 128
+
+            try:
+                channel = patch_list.index(patch)
+            except:
+                channel = 15
 
             song_f.append(['pitch_wheel_change', time, channel, pitch_wheel])
 
