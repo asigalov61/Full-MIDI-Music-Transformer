@@ -137,7 +137,7 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
         # START PROCESSING
 
         # Convering MIDI to ms score with MIDI.py module
-        ms_score = TMIDIX.midi2single_track_ms_score(open(f, 'rb').read())
+        ms_score = TMIDIX.midi2single_track_ms_score(open(f, 'rb').read(), verbose=True)
 
         events_matrix1 = []
 
