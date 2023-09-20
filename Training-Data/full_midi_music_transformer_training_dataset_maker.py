@@ -137,27 +137,7 @@ for f in tqdm(filez[START_FILE_NUMBER:]):
         # START PROCESSING
 
         # Convering MIDI to ms score with MIDI.py module
-        score = TMIDIX.midi2score(open(f, 'rb').read())
-
-        events_matrix = []
-
-        itrack = 1
-
-        events_types = ['note',
-                        'patch_change',
-                        'control_change',
-                        'key_after_touch',
-                        'channel_after_touch',
-                        'pitch_wheel_change']
-
-        while itrack < len(score):
-            for event in score[itrack]:
-                if event[0] in events_types:
-                    events_matrix.append(event)
-            itrack += 1
-
-        opus = TMIDIX.score2opus([score[0], events_matrix])
-        ms_score = TMIDIX.opus2score(TMIDIX.to_millisecs(opus))
+        ms_score = TMIDIX.midi2single_track_ms_score(open(f, 'rb').read())
 
         events_matrix1 = []
 
@@ -518,8 +498,7 @@ if len(out) != 0:
 detailed_stats = TMIDIX.Tegridy_SONG_to_Full_MIDI_Converter(song_f,
                                                     output_signature = 'Full MIDI Music Transformer',
                                                     output_file_name = '/content/Full-MIDI-Music-Transformer-Composition',
-                                                    track_name='Project Los Angeles',
-                                                    number_of_ticks_per_quarter=500
+                                                    track_name='Project Los Angeles'
                                                     )
 
 """# Congrats! You did it! :)"""
