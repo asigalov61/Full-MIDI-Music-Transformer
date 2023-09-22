@@ -429,15 +429,13 @@ print('=' * 70)
 
 #@title Test INTs
 
-train_data1 = random.choice(melody_chords_f)
+data = random.choice(melody_chords_f)
 
-print('Sample INTs', train_data1[:15])
+print('Sample INTs', data[:15])
 
-out = train_data1[:200000]
+if len(data) != 0:
 
-if len(out) != 0:
-
-    song = out
+    song = data
     song_f = []
     time = 0
     dur = 0
@@ -452,6 +450,9 @@ if len(out) != 0:
 
     patch_list = [0] * 16
     patch_list[9] = 128
+
+    channels_list = [0] * 16
+    channels_list[9] = 1
 
     for s in song1: # decoding...
 
@@ -476,10 +477,20 @@ if len(out) != 0:
             pitch = (s[3]-256-128-128) % 128
             vel = (s[4]-256-128-128-256)
 
-            try:
+            if patch in patch_list:
                 channel = patch_list.index(patch)
-            except:
-                channel = 15
+                channels_list[channel] = 1
+
+            else:
+                if 0 in channels_list:
+                  channel = channels_list.index(0)
+                  channels_list[channel] = 1
+                  song_f.append(['patch_change', time, channel, patch])
+
+                else:
+                  channel = 15
+                  channels_list[channel] = 1
+                  song_f.append(['patch_change', time, channel, patch])
 
             song_f.append(['note', time, dur, channel, pitch, vel])
 
@@ -551,8 +562,8 @@ if len(out) != 0:
             song_f.append(['pitch_wheel_change', time, channel, pitch_wheel])
 
 detailed_stats = TMIDIX.Tegridy_SONG_to_Full_MIDI_Converter(song_f,
-                                                    output_signature = 'Full MIDI Music Transformer',
-                                                    output_file_name = '/content/Full-MIDI-Music-Transformer-Composition',
+                                                    output_signature = 'FMT',
+                                                    output_file_name = '/content/LAMD-Music-Composition',
                                                     track_name='Project Los Angeles'
                                                     )
 
