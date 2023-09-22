@@ -562,8 +562,8 @@ if len(data) != 0:
             song_f.append(['pitch_wheel_change', time, channel, pitch_wheel])
 
 detailed_stats = TMIDIX.Tegridy_SONG_to_Full_MIDI_Converter(song_f,
-                                                    output_signature = 'FMT',
-                                                    output_file_name = '/content/LAMD-Music-Composition',
+                                                    output_signature = 'Full MIDI Music Transformer',
+                                                    output_file_name = '/content/Full-MIDI-Music-Transformer-Composition',
                                                     track_name='Project Los Angeles'
                                                     )
 
