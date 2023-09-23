@@ -5,6 +5,16 @@
 
 ***
 
+## This is the most advanced and optimized Music Transformer model/implementation
+
+## Features include
+
+### 1) Minimal practical model size with maximum possible sequence length
+### 2) MIDI events and time counters tokens to help with long-term structure and overall performance
+### 3) Full MIDI specification encoding, featuring full range of MIDI instruments, control changes events, pitch wheel changes events, e.t.c
+
+***
+
 ## Original Version
 
 [![Open In Colab][colab-badge]][colab-notebook2]
