@@ -7,7 +7,7 @@
 [colab-notebook2]: <https://colab.research.google.com/github/asigalov61/Full-MIDI-Music-Transformer/blob/main/Training-Data/Full_MIDI_Music_Transformer_Training_Dataset_Maker.ipynb>
 [colab-badge]: <https://colab.research.google.com/assets/colab-badge.svg>
 
-**
+***
 
 ## Recommended MIDI datasets: 
 ### 1) [Los Angeles MIDI Dataset](https://github.com/asigalov61/Los-Angeles-MIDI-Dataset)
