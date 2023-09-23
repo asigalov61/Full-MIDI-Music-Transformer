@@ -29,6 +29,3 @@
 
 ### Project Los Angeles
 ### Tegridy Code 2023
-
-### Project Los Angeles
-### Tegridy Code 2023
