@@ -26,16 +26,5 @@
 
 ***
 
-## Composer Version
-
-[![Open In Colab][colab-badge]][colab-notebook3]
-
-[colab-notebook3]: <https://colab.research.google.com/github/asigalov61/Full-MIDI-Music-Transformer/blob/main/Full_MIDI_Music_Transformer_Composer.ipynb>
-[colab-badge]: <https://colab.research.google.com/assets/colab-badge.svg>
-
-### MuseNet-style workflow for endless supervised continuation generation
-
-***
-
 ### Project Los Angeles
 ### Tegridy Code 2023
